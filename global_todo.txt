@@ -1,0 +1,7 @@
+
+
+1. Always do pull before raising the pr
+2. if issue resolve conflicts first before pr.
+3. keep the sections simple and add comments and docstrings for other
+4. in each file top add the agenda of the file and which perpose it fill
+5. keep the naming consistent as well as with section extention (eg. /module1/utils-module1.extention, /module2/utils-module2.extention)
