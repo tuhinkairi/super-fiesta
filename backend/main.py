@@ -1,7 +1,6 @@
-from lib.server import Server
+from src.setup.server import app
+import uvicorn
 
-
-app = Server()
 
 if __name__ == "__main__":
-    app.run()
+    uvicorn.run("main:app", host="127.0.0.1", port=8000)
