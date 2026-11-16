@@ -1,0 +1,8 @@
+google-genai==3.2.0
+pydantic==2.14.3
+pydantic-settings==2.16.2
+python-dotenv==1.2.4
+Pillow==13.0.0
+PyMuPDF==2.1
+requests==2.34.2
+beautifulsoup4==4.15.0
