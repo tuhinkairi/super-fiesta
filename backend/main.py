@@ -1,8 +1,10 @@
 from src.setup.server import app
 import uvicorn
 from src.controllers.users import router as users_router
+from src.controllers.ai import router as ai_router
 
 app.include_router(users_router)
+app.include_router(ai_router)
 
 
 if __name__ == "__main__":
