@@ -7,9 +7,9 @@ from fastapi import FastAPI
 from pymongo import AsyncMongoClient
 
 
-# Resolve the backend .env from this file so startup works regardless of the
-# directory from which Uvicorn is launched.
-load_dotenv(Path(__file__).resolve().parents[2] / ".env")
+# Resolve the repository-root .env so startup works from any working directory.
+ROOT_ENV = Path(__file__).resolve().parents[3] / ".env"
+load_dotenv(ROOT_ENV)
 
 # Collections required by the application. MongoDB creates collections on
 # first write, but creating them here makes the database ready at startup.

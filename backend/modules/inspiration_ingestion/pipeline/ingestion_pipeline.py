@@ -2,6 +2,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 from modules.story_intelligence.llm.llm_client import LLMClient
+from modules.inspiration_ingestion.config import get_inspiration_settings
 
 from modules.inspiration_ingestion.types import InspirationRecord
 
@@ -47,7 +48,9 @@ class InspirationIngestionPipeline:
 
         # Use one shared Gemini client across all AI components.
         self._owns_llm_client = llm_client is None
-        self.llm_client = llm_client or LLMClient()
+        self.llm_client = llm_client or LLMClient(
+            model_name=get_inspiration_settings().model_name
+        )
 
         self.file_handler = FileHandler()
         self.pdf_extractor = PDFExtractor()

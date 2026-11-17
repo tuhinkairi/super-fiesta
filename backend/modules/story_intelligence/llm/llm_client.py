@@ -24,7 +24,7 @@ class LLMClient:
         "image/gif",
     }
 
-    def __init__(self):
+    def __init__(self, model_name: str | None = None):
         settings = get_settings()
 
         api_key = settings.gemini_api_key.get_secret_value()
@@ -32,7 +32,8 @@ class LLMClient:
         if not api_key.strip():
             raise ValueError("Gemini API key is missing.")
 
-        self.model = settings.gemini_model
+        self.model = model_name or settings.gemini_model
+        self.embedding_model = settings.embedding_model
         self.timeout_seconds = settings.gemini_timeout_ms / 1000
         self.client = genai.Client(
             api_key=api_key,
@@ -171,7 +172,7 @@ class LLMClient:
 
         try:
             response = self.client.models.embed_content(
-                model="gemini-embedding-001",
+                model=self.embedding_model,
                 contents=text.strip(),
                 config=genai_types.EmbedContentConfig(
                     output_dimensionality=768,

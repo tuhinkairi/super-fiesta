@@ -6,7 +6,10 @@ from fastapi.concurrency import run_in_threadpool
 
 from src.models.ai_schemas import InspirationSearchRequest, StoryAnalysisRequest, SuggestionRequest
 from src.services.ai_services import get_ai_model
+import os
 
+
+project_id = os.getenv("GEMINI_PROJECT_ID")
 router = APIRouter(prefix="/ai", tags=["AI tools"])
 
 
@@ -30,8 +33,8 @@ async def analyze_story(body: StoryAnalysisRequest, request: Request):
         _handle_error(exc)
 
 
-@router.post("/stories/{project_id:path}/graph/approve")
-async def approve_story_graph(project_id: str, request: Request):
+@router.post(f"/stories/{project_id}/graph/approve")
+async def approve_story_graph(request: Request):
     try:
         graph = await run_in_threadpool(get_ai_model(request.app).approve_graph, project_id)
         return graph.model_dump(mode="json")
@@ -39,19 +42,22 @@ async def approve_story_graph(project_id: str, request: Request):
         _handle_error(exc)
 
 
-@router.post("/stories/{project_id:path}/suggestions")
-async def generate_suggestions(project_id: str, body: SuggestionRequest, request: Request):
+@router.post(f"/stories/{project_id}/suggestions")
+async def generate_suggestions(body: SuggestionRequest, request: Request):
     try:
-        suggestions = await run_in_threadpool(
+        suggestion_graph = await run_in_threadpool(
             get_ai_model(request.app).suggest, project_id, body.story_context, body.limit
         )
-        return [item.model_dump(mode="json") for item in suggestions]
+        return [
+            item.model_dump(mode="json")
+            for item in suggestion_graph.suggestions
+        ]
     except Exception as exc:
         _handle_error(exc)
 
 
-@router.post("/projects/{project_id:path}/inspirations", status_code=status.HTTP_201_CREATED)
-async def upload_inspiration(project_id: str, request: Request, file: UploadFile):
+@router.post(f"/projects/{project_id}/inspirations", status_code=status.HTTP_201_CREATED)
+async def upload_inspiration(request: Request, file: UploadFile):
     """Upload a supported old-work file (PDF, image, TXT, or Markdown)."""
     suffix = Path(file.filename or "inspiration.txt").suffix or ".txt"
     temp_path = None
@@ -75,8 +81,8 @@ async def upload_inspiration(project_id: str, request: Request, file: UploadFile
             Path(temp_path).unlink(missing_ok=True)
 
 
-@router.post("/projects/{project_id:path}/inspirations/search")
-async def search_inspirations(project_id: str, body: InspirationSearchRequest, request: Request):
+@router.post(f"/projects/{project_id}/inspirations/search")
+async def search_inspirations(body: InspirationSearchRequest, request: Request):
     try:
         results = await run_in_threadpool(
             get_ai_model(request.app).search_inspiration, project_id, body.query, body.limit
