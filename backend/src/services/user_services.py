@@ -35,7 +35,6 @@ async def update_user(db, user_id: ObjectId, changes: dict) -> dict | None:
     await db["users"].update_one({"_id": user_id}, {"$set": changes})
     return await get_user(db, user_id)
 
-
 async def delete_user(db, user_id: ObjectId) -> bool:
     result = await db["users"].delete_one({"_id": user_id})
     return result.deleted_count == 1
