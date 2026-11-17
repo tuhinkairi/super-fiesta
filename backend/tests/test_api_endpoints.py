@@ -4,6 +4,9 @@ from __future__ import annotations
 
 from contextlib import asynccontextmanager
 from copy import deepcopy
+import json
+import logging
+import os
 from pathlib import Path
 import sys
 from uuid import uuid4
@@ -20,6 +23,32 @@ if str(BACKEND_ROOT) not in sys.path:
     sys.path.insert(0, str(BACKEND_ROOT))
 
 import main
+
+LOG_DIR = BACKEND_ROOT / "logs"
+LOG_DIR.mkdir(exist_ok=True)
+RESPONSE_LOG = LOG_DIR / "api_test_responses.jsonl"
+response_logger = logging.getLogger("api_endpoint_test_responses")
+response_logger.setLevel(logging.INFO)
+if not response_logger.handlers:
+    file_handler = logging.FileHandler(RESPONSE_LOG, encoding="utf-8")
+    file_handler.setFormatter(logging.Formatter("%(message)s"))
+    response_logger.addHandler(file_handler)
+
+
+class ResponseLoggingTestClient(TestClient):
+    """Persist each endpoint response as a JSON Lines record."""
+
+    def send(self, request, **kwargs):
+        response = super().send(request, **kwargs)
+        response.read()
+        response_logger.info(json.dumps({
+            "test": os.getenv("PYTEST_CURRENT_TEST", "direct invocation"),
+            "method": request.method,
+            "url": str(request.url),
+            "status_code": response.status_code,
+            "response": response.text,
+        }, ensure_ascii=False))
+        return response
 
 
 class Payload:
@@ -119,10 +148,12 @@ class FakeDatabase:
 
 @pytest.fixture
 def project_id() -> str:
-    env_path = Path(__file__).resolve().parents[1] / ".env"
+    # Keep the project identifier in local configuration; tests supply it to
+    # the API from .env and never prompt the caller for it.
+    env_path = BACKEND_ROOT.parent / ".env"
     project_id = dotenv_values(env_path).get("PROJECT_ID") if env_path.exists() else None
     if not project_id:
-        pytest.skip("Set PROJECT_ID in backend/.env to exercise project-scoped routes")
+        pytest.skip("Set PROJECT_ID in the repository-root .env to exercise project-scoped routes")
     return project_id.strip().rstrip("\\")
 
 
@@ -139,7 +170,7 @@ def client(monkeypatch):
         fake_ai.close()
 
     monkeypatch.setattr(main.app.router, "lifespan_context", test_lifespan)
-    with TestClient(main.app) as test_client:
+    with ResponseLoggingTestClient(main.app) as test_client:
         yield test_client, fake_ai
 
 
@@ -232,4 +263,6 @@ def test_ai_endpoints_with_env_project_id(client, project_id):
 if __name__ == "__main__":
     # Running this file directly should execute the tests and show a report,
     # instead of importing the test definitions and exiting silently.
-    raise SystemExit(pytest.main([__file__, "-v", "-s"]))
+    exit_code = pytest.main([__file__, "-v", "-s", "-p", "no:cacheprovider"])
+    print(f"\nAPI response logs saved to: {RESPONSE_LOG}")
+    raise SystemExit(exit_code)
