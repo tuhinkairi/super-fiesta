@@ -1,10 +1,13 @@
 # Backend API
 
 FastAPI exposes user CRUD and the AI workflows implemented by the top-level
-`modules/` package. Run the app from `backend/` with `uvicorn main:app --reload`.
-Set `DB_URI`, `DB_NAME`, and `GEMINI_API_KEY` in `backend/.env` before use.
-`GEMINI_MODEL` can override the default `gemini-3.8-flash`; Gemini requests have a
-45-second timeout and one attempt by default.
+`modules/` package. Run `uvicorn main:app --reload` from `backend/`. Copy the
+repository-root `.env.example` to `.env` and fill in the MongoDB, Gemini, Neo4j,
+and Pinecone credentials. Backend and AI modules read that same root `.env`
+regardless of the launch directory. `GEMINI_MODEL` is the fallback;
+`STORY_MODEL`, `INSPIRATION_MODEL`, `SUGGESTION_MODEL`, and `ARTIST_GRAPH_MODEL`
+can select module-specific Gemini models. Gemini requests have a 45-second
+timeout and one attempt by default.
 
 ## AI routes
 

@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field, field_validator
 
 
 # Load the project's .env file.
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(__file__).resolve().parents[5]
 ENV_FILE = PROJECT_ROOT / ".env"
 
 load_dotenv(ENV_FILE)
@@ -85,8 +85,10 @@ def load_settings() -> Settings:
         neo4j_password=os.getenv("NEO4J_PASSWORD", ""),
         neo4j_database=os.getenv("NEO4J_DATABASE", "neo4j"),
         llm_provider=os.getenv("LLM_PROVIDER", "gemini"),
-        llm_api_key=os.getenv("LLM_API_KEY", ""),
-        llm_model=os.getenv("LLM_MODEL", ""),
+        llm_api_key=os.getenv("GEMINI_API_KEY", os.getenv("LLM_API_KEY", "")),
+        llm_model=os.getenv(
+            "ARTIST_GRAPH_MODEL", os.getenv("GEMINI_MODEL", os.getenv("LLM_MODEL", ""))
+        ),
     )
 
 

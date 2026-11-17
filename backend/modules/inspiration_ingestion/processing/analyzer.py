@@ -1,6 +1,7 @@
 from pydantic import BaseModel, ConfigDict, Field
 
 from modules.story_intelligence.llm.llm_client import LLMClient
+from modules.inspiration_ingestion.config import get_inspiration_settings
 
 from modules.inspiration_ingestion.processing.chunker import (
     TextChunker,
@@ -39,7 +40,9 @@ class InspirationAnalyzer:
     def __init__(self, llm_client=None, chunker=None):
 
         self._owns_client = llm_client is None
-        self.llm_client = llm_client or LLMClient()
+        self.llm_client = llm_client or LLMClient(
+            model_name=get_inspiration_settings().model_name
+        )
 
         self.chunker = chunker or TextChunker()
 

@@ -25,8 +25,12 @@ class InspirationSettings(BaseSettings):
     chunk_size: int = Field(default=1000, gt=0)
     chunk_overlap: int = Field(default=150, ge=0)
 
+    model_name: str = Field(
+        default="gemini-3.8-flash", validation_alias="INSPIRATION_MODEL"
+    )
+
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=Path(__file__).resolve().parents[3] / ".env",
         env_file_encoding="utf-8",
         extra="ignore",
     )
