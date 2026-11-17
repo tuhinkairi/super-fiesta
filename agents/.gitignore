@@ -1,0 +1,25 @@
+# Environment secrets
+.env
+.env.*
+
+# Python virtual environment
+.venv/
+venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# IDE
+.vscode/
+
+# Generated databases
+*.db
+*.sqlite3
+
+# Generated application storage
+storage/
+
+# Testing
+.pytest_cache/
+.coverage
